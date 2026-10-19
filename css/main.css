@@ -185,7 +185,7 @@ nav button:hover:not(:disabled) {
 .hero {
   min-height: 510px;
   position: relative;
-  background: #66869c url("../assets/images/aircraft.svg") center 42% / cover;
+  background: #315578 url("../assets/images/aircraft-hero.png") center 48% / cover;
   isolation: isolate;
   padding: 70px max(40px, calc((100vw - 1200px) / 2)) 130px;
   color: #fff;

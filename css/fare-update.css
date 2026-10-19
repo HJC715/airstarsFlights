@@ -1,0 +1,216 @@
+.fare-comparison {
+  min-width: 0;
+  margin-top: 24px;
+}
+
+.fare-comparison-heading h3 {
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.fare-comparison-heading p,
+.fare-comparison-note {
+  margin-bottom: 14px;
+  color: var(--muted, #697789);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.fare-comparison-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(230px, 1fr));
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 3px 3px 14px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-color: var(--gold, #c5a36a) #eceeea;
+  scrollbar-width: thin;
+}
+
+.fare-comparison-cards:focus-visible {
+  outline: 3px solid #ad8642;
+  outline-offset: 2px;
+}
+
+.fare-option {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 18px 16px;
+  border: 1px solid var(--line, #dedfdc);
+  border-radius: 7px;
+  background: #fff;
+  scroll-snap-align: start;
+}
+
+.fare-option.is-selected {
+  border-color: var(--gold, #c5a36a);
+  box-shadow: 0 0 0 1px var(--gold, #c5a36a);
+  background: #fffdf8;
+}
+
+.fare-option-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.fare-option-heading h4 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.fare-family-code {
+  color: var(--muted, #697789);
+  font-size: 12px;
+}
+
+.fare-selection-status {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #f0f2ef;
+  color: var(--muted, #697789);
+  font-size: 11px;
+}
+
+.fare-option.is-selected .fare-selection-status {
+  background: var(--navy, #132847);
+  color: #fff;
+}
+
+.fare-option-price {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 64px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fare-option-price strong {
+  color: var(--navy, #132847);
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.fare-option-price span,
+.fare-option-price small {
+  margin-top: 3px;
+  color: var(--muted, #697789);
+  font-size: 11px;
+}
+
+.fare-option-benefits {
+  flex: 1;
+  margin: 0 0 18px;
+}
+
+.fare-benefit-row {
+  min-height: 68px;
+  padding: 12px 0;
+  border-top: 1px solid #e9eae5;
+}
+
+.fare-benefit-row dt {
+  margin-bottom: 4px;
+  color: var(--muted, #697789);
+  font-size: 11px;
+}
+
+.fare-benefit-row dd {
+  margin: 0;
+  color: var(--navy, #132847);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.fare-benefit-seats {
+  min-height: 142px;
+}
+
+.fare-benefit-miles {
+  min-height: 142px;
+}
+
+.fare-leg-benefit,
+.fare-leg-label,
+.fare-benefit-note {
+  display: block;
+}
+
+.fare-leg-benefit + .fare-leg-benefit {
+  margin-top: 7px;
+}
+
+.fare-leg-label,
+.fare-benefit-note {
+  color: var(--muted, #697789);
+  font-size: 10px;
+}
+
+.fare-benefit-miles .fare-leg-benefit {
+  margin-top: 6px;
+}
+
+.fare-select {
+  width: 100%;
+  min-height: 44px;
+  border-color: var(--navy, #132847);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fare-select.is-selected {
+  background: var(--navy, #132847);
+  color: #fff;
+}
+
+.fare-select.is-selected:hover:not(:disabled) {
+  border-color: #28466c;
+  background: #28466c;
+}
+
+.fare-comparison-note {
+  margin: 5px 0 0;
+}
+
+@supports (grid-template-rows: subgrid) {
+  .fare-comparison-cards {
+    row-gap: 0;
+  }
+
+  .fare-option {
+    display: grid;
+    grid-row: span 9;
+    grid-template-rows: subgrid;
+  }
+
+  .fare-option-benefits {
+    display: contents;
+  }
+
+  .fare-select {
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .fare-comparison-cards {
+    grid-template-columns: repeat(3, minmax(230px, 78%));
+    margin-right: -3px;
+  }
+
+  .fare-option {
+    padding: 16px 14px;
+  }
+}

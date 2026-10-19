@@ -45,7 +45,7 @@ async function run(
   if (connection) {
     assert.equal(await p.locator(".selected [data-flight-cabin]").count(), 2);
     await p.locator(".selected [data-flight-cabin]").nth(1).selectOption("C");
-    await p.locator(".selected [data-flight-family]").selectOption("Flex");
+    await p.locator('.selected [data-select-family$="|Flex"]').click();
     const mixed = await p.evaluate(async () => {
       const { state } = await import("./js/state.js");
       return state.journeys[0].cabins;
@@ -58,7 +58,7 @@ async function run(
   assert((await p.locator('[aria-invalid="true"]').count()) > 0);
   await p.locator("#demo-data").click();
   await p.locator("#next").click();
-  await p.locator("[data-add-bag]").first().click();
+  await p.locator('[data-bag-change="0|0|23|1"]').click();
   const base = await p.evaluate(async () => {
     const { state } = await import("./js/state.js");
     const { calculateOrder } = await import("./js/pricing.js");
@@ -84,14 +84,33 @@ async function run(
     fullPage: true,
   });
   await p.locator("#next").click();
-  await p.locator("[data-meal]").first().selectOption("SP-VGAN");
+  assert.equal(
+    await p.locator("[data-special-meal]").first().inputValue(),
+    "NONE",
+  );
+  await p.locator("[data-special-meal]").first().selectOption("SP-VGAN");
+  if (connection) {
+    const mains = await p
+      .locator("[data-meal]")
+      .first()
+      .locator("option")
+      .evaluateAll((options) => options.map((option) => option.value));
+    for (const code of ["B01", "B02", "B03"]) assert(mains.includes(code));
+    await p.locator("[data-meal]").first().selectOption("B01");
+  } else {
+    assert.equal(
+      await p.locator("[data-meal]").count(),
+      0,
+      "Y has only special meal requests",
+    );
+  }
   if (connection) {
     const before = await p.evaluate(async () => {
       const { state } = await import("./js/state.js");
       return structuredClone(state.services.t0.j0);
     });
     await p.locator('.steps [data-step="1"]').click();
-    await p.locator(".selected [data-flight-family]").selectOption("Basic");
+    await p.locator('.selected [data-select-family$="|Basic"]').click();
     assert.deepEqual(
       await p.evaluate(async () => {
         const { state } = await import("./js/state.js");
@@ -149,7 +168,7 @@ async function run(
     });
     assert.equal(dependency.cleared, 0);
     assert.equal(dependency.kept, kept);
-    assert.equal(dependency.surname, "TEST");
+    assert.equal(dependency.surname, "CHEN");
     await p.locator("#next").click();
     await p.locator("#next").click();
     await p.locator("#next").click();
@@ -160,6 +179,11 @@ async function run(
   else await p.locator("#next").click();
   await p.locator("#review-check").check();
   await p.locator("#next").click();
+  assert.doesNotMatch(
+    await p.locator("#step-content").textContent(),
+    /成功率|98%|3[–-]5\s*秒|實際扣款/,
+    "payment must omit implementation statistics and the zero-charge total row",
+  );
   await p.locator('[data-card="DEMO-VIRTUAL"]').click();
   const start = Date.now();
   await p.locator("#pay").click();
@@ -182,7 +206,27 @@ async function run(
     );
     await p.locator("#pay").click();
   }
-  await p.locator(".pnr").waitFor({ timeout: 10000 });
+  await p.locator("#finish-payment").waitFor({ timeout: 10000 });
+  assert.equal(
+    await p.locator(".pnr").count(),
+    0,
+    "authorization precedes the confirmation page",
+  );
+  assert.match(
+    await p.locator(".authorization-success").textContent(),
+    /授權成功/,
+  );
+  assert.deepEqual(
+    await p.evaluate(async () => {
+      const { state } = await import("./js/state.js");
+      return [state.screen, state.activeStep, state.paymentState];
+    }),
+    ["booking", 7, "completed"],
+  );
+  assert(await p.locator('.steps [data-step="6"]').isDisabled());
+  if (mobile) await p.locator("[data-mobile-next]").click();
+  else await p.locator("#finish-payment").click();
+  await p.locator(".pnr").waitFor();
   assert(await p.locator("#currency").isEnabled());
   await p.locator("#currency").selectOption("EUR");
   assert.match(await p.locator(".pnr").textContent(), /^[A-Z0-9]{6}$/);

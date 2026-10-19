@@ -1,7 +1,7 @@
 import { inventory } from "./inventory.js";
 import { dateValid, localDate } from "./timezone.js";
 import { airportByCode, aircraft } from "./data.js";
-import { serviceCount, mealOptions } from "./meals.js";
+import { validMealSelections } from "./meals.js";
 export function validateTravelers(s) {
   const errors = {};
   const first = s.journeys[0]?.option?.legs?.[0];
@@ -111,13 +111,13 @@ export function validateSeats(s) {
         used = new Set();
       for (const t of s.travelers) {
         const id = s.services[t.id]?.[j.id]?.seats?.[f.instanceKey];
+        if (!id) continue;
         if (
-          !id ||
           !inv.seats.some((x) => x.id === id) ||
           inv.occupied.has(id) ||
           used.has(id)
         )
-          return "請為每位旅客的每個航段選擇有效且不重複的座位";
+          return "已選座位須有效且不重複；也可取消選位，於報到時安排";
         used.add(id);
       }
     }
@@ -130,11 +130,8 @@ export function validateMeals(s) {
     for (let i = 0; i < j.option.legs.length; i++) {
       const f = j.option.legs[i];
       for (const t of s.travelers)
-        for (let n = 0; n < serviceCount(f); n++) {
-          const id = s.services[t.id]?.[j.id]?.meals?.[f.instanceKey]?.[n];
-          if (!mealOptions(f, j.cabins[i], n).some((m) => m[0] === id))
-            return "請完成每位旅客每次餐飲選擇";
-        }
+        if (!validMealSelections(f, j.cabins[i], s.services[t.id]?.[j.id]))
+          return "請確認每位旅客的餐點與特殊餐需求";
     }
   return "";
 }
@@ -146,7 +143,10 @@ export function clearJourneyServices(
   for (const data of Object.values(s.services)) {
     if (!data[jid]) continue;
     if (seats) data[jid].seats = {};
-    if (meals) data[jid].meals = {};
+    if (meals) {
+      data[jid].meals = {};
+      data[jid].specialMeals = {};
+    }
     if (bags) data[jid].bags = [];
   }
   s.maxStep = 1;

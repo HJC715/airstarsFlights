@@ -215,13 +215,13 @@ test("meal frequency and special menus match duration and cabin", () => {
   assert.equal(serviceCount({ durationMinutes: 900 }), 2);
   assert.equal(serviceCount({ durationMinutes: 930 }), 3);
   assert(
-    mealOptions({ durationMinutes: 160 }, "Y", 0).some((m) => m[0] === "S01"),
+    mealOptions({ durationMinutes: 160 }, "Y", 0).some((m) => m[0] === "NONE"),
   );
   assert(
     mealOptions({ durationMinutes: 160 }, "C", 0).some((m) => m[0] === "P02"),
   );
   assert(
-    mealOptions({ durationMinutes: 930 }, "Y", 2).some((m) => m[0] === "L21"),
+    mealOptions({ durationMinutes: 930 }, "F", 2).some((m) => m[0] === "B03"),
   );
 });
 test("currency conversions retain TWD and explicitly balance displayed rounding", () => {

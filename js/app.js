@@ -21,6 +21,7 @@ import {
 } from "./booking.js";
 import { calculateOrder } from "./pricing.js";
 import { autoSeats } from "./seatmap.js";
+import { selectSeat, moveSeatFlight } from "./seat-ui.js";
 import { inventory } from "./inventory.js";
 import { pay } from "./payment.js";
 import { downloadPDF } from "./pdf.js";
@@ -42,12 +43,22 @@ function flowError(msg) {
 }
 function rerender({ top = false } = {}) {
   const old = s.priceBreakdown?.totalTWD || 0;
+  const visibleAmount = Number(
+    document.querySelector("[data-price]")?.dataset.numericAmount,
+  );
   render();
   const next = calculateOrder(s).totalTWD;
   if (old !== next)
     document
       .querySelectorAll("[data-price]")
-      .forEach((el) => animateMoney(el, old, next, fmt));
+      .forEach((el) =>
+        animateMoney(
+          el,
+          Number.isFinite(visibleAmount) ? visibleAmount : old,
+          next,
+          fmt,
+        ),
+      );
   if (top) {
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.querySelector("#main").focus({ preventScroll: true });
@@ -61,11 +72,12 @@ function goHome() {
   if (
     s.journeys.length &&
     s.screen !== "confirmation" &&
+    s.paymentState !== "completed" &&
     !confirm("尚有未付款草稿，確定捨棄並返回首頁？")
   )
     return;
   if (
-    s.screen === "confirmation" &&
+    (s.screen === "confirmation" || s.paymentState === "completed") &&
     !confirm("離開後將無法查回此訂單或下載 PDF，確定返回首頁？")
   )
     return;
@@ -76,7 +88,7 @@ function goHome() {
 }
 function changeStep(step) {
   if (
-    s.paymentState === "processing" ||
+    ["processing", "completed"].includes(s.paymentState) ||
     step > s.maxStep ||
     s.screen !== "booking"
   )
@@ -303,7 +315,7 @@ document.addEventListener("submit", async (e) => {
 });
 document.addEventListener("input", (e) => {
   const key = e.target.dataset.field;
-  if (!key || s.paymentState === "processing") return;
+  if (!key || ["processing", "completed"].includes(s.paymentState)) return;
   const [id, k] = key.split(".");
   if (id === "contact") s.contact[k] = e.target.value;
   else s.travelers.find((t) => t.id === id)[k] = e.target.value;
@@ -317,6 +329,7 @@ document.addEventListener("change", (e) => {
     rerender();
     return;
   }
+  if (s.paymentState === "completed") return;
   if (el.dataset.home) {
     const [i, k] = el.dataset.home.split(".");
     draft.legs[+i][k] = el.value;
@@ -378,6 +391,7 @@ document.addEventListener("change", (e) => {
           const sv = service(t.id, j.id);
           delete sv.seats[flight.instanceKey];
           delete sv.meals[flight.instanceKey];
+          delete sv.specialMeals[flight.instanceKey];
         }
       s.reviewed = false;
       j.cabins = [...st.cabins];
@@ -404,6 +418,15 @@ document.addEventListener("change", (e) => {
       f = j.option.legs[li];
     service(s.travelers[ti].id, j.id).meals[f.instanceKey][n] = el.value;
     s.reviewed = false;
+    return;
+  }
+  if (el.dataset.specialMeal) {
+    const [ji, li, ti] = el.dataset.specialMeal.split("|").map(Number),
+      j = s.journeys[ji],
+      f = j.option.legs[li];
+    service(s.travelers[ti].id, j.id).specialMeals[f.instanceKey] = el.value;
+    s.reviewed = false;
+    rerender();
   }
 });
 document.addEventListener("click", async (e) => {
@@ -415,6 +438,18 @@ document.addEventListener("click", async (e) => {
     goHome();
     if (focus && s.screen === "home")
       document.querySelector("#search").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+  if (el.id === "finish-payment") {
+    if (s.paymentState === "completed" && s.confirmation) {
+      s.screen = "confirmation";
+      rerender({ top: true });
+    }
+    return;
+  }
+  if (s.paymentState === "completed" && s.screen === "booking") {
+    if (el.hasAttribute("data-mobile-next"))
+      document.querySelector("#finish-payment")?.click();
     return;
   }
   if (el.dataset.trip) {
@@ -495,6 +530,25 @@ document.addEventListener("click", async (e) => {
     toast("已選擇 " + o.legs.map((f) => f.flightNo).join(" / "));
     return;
   }
+  if (el.dataset.selectFamily) {
+    const raw = el.dataset.selectFamily,
+      first = raw.indexOf("|"),
+      last = raw.lastIndexOf("|"),
+      ji = +raw.slice(0, first),
+      key = raw.slice(first + 1, last),
+      family = raw.slice(last + 1),
+      j = s.journeys[ji],
+      option = getResults(j).find((o) => o.key === key);
+    if (!option || !["Saver", "Basic", "Flex"].includes(family)) return;
+    const setting = optionSetting(j, option);
+    setting.family = family;
+    if (j.option?.key === key) {
+      j.family = family;
+      s.reviewed = false;
+    }
+    rerender();
+    return;
+  }
   if (el.dataset.date) {
     const [ji, date] = el.dataset.date.split("|"),
       j = s.journeys[+ji];
@@ -508,22 +562,23 @@ document.addEventListener("click", async (e) => {
     return;
   }
   if (el.id === "demo-data") {
+    const names = [
+      ["CHEN", "WEI LIN", "MR"],
+      ["LIN", "YU TING", "MS"],
+      ["WANG", "JUN HAO", "MR"],
+      ["HUANG", "JIA XIN", "MS"],
+      ["LIU", "YI CHEN", "MX"],
+      ["LEE", "RUI EN", "MS"],
+      ["HSU", "BO YU", "MR"],
+      ["CHANG", "SI YU", "MS"],
+      ["WU", "CHENG HAN", "MR"],
+    ];
     s.travelers.forEach((t, i) =>
       Object.assign(t, {
-        title: "MX",
-        surname: "TEST",
-        givenName: [
-          "DEMO",
-          "ALEX",
-          "JAMIE",
-          "TAYLOR",
-          "ROBIN",
-          "CASEY",
-          "MORGAN",
-          "SKYLER",
-          "RILEY",
-        ][i],
-        birthDate: "1990-01-15",
+        title: names[i][2],
+        surname: names[i][0],
+        givenName: names[i][1],
+        birthDate: `${1990 + i}-0${(i % 8) + 1}-15`,
         nationality: "TW",
         documentSex: "X",
         passportNumber: "TEST000" + i,
@@ -532,8 +587,8 @@ document.addEventListener("click", async (e) => {
       }),
     );
     s.contact = {
-      name: "虛構測試旅客",
-      email: "demo@example.com",
+      name: "陳瑋霖（測試）",
+      email: "wei.lin.chen@example.com",
       phone: "+886 000000000",
     };
     setErrors({});
@@ -542,43 +597,24 @@ document.addEventListener("click", async (e) => {
     toast("已填入虛構測試資料");
     return;
   }
-  if (el.dataset.addBag) {
-    const [ji, ti] = el.dataset.addBag.split("|").map(Number),
-      j = s.journeys[ji],
-      sv = service(s.travelers[ti].id, j.id);
-    if (sv.bags.length < 3)
-      sv.bags.push(+document.querySelector(`#bag-${ji}-${ti}`).value);
-    s.reviewed = false;
-    rerender();
-    return;
-  }
-  if (el.dataset.removeBag) {
-    const [ji, ti, n] = el.dataset.removeBag.split("|").map(Number);
-    service(s.travelers[ti].id, s.journeys[ji].id).bags.splice(n, 1);
+  if (el.dataset.bagChange) {
+    const [ji, ti, kg, delta] = el.dataset.bagChange.split("|").map(Number),
+      bags = service(s.travelers[ti].id, s.journeys[ji].id).bags;
+    if (![23, 32].includes(kg)) return;
+    if (delta === 1 && bags.length < 3) bags.push(kg);
+    if (delta === -1 && bags.includes(kg)) bags.splice(bags.lastIndexOf(kg), 1);
     s.reviewed = false;
     rerender();
     return;
   }
   if (el.dataset.seat) {
-    const { journey: ji, leg: li, traveler: ti } = seatContext,
-      j = s.journeys[ji],
-      f = j.option.legs[li],
-      t = s.travelers[ti],
-      inv = inventory(f, j.cabins[li]),
-      id = el.dataset.seat;
-    if (
-      inv.occupied.has(id) ||
-      !inv.seats.some((x) => x.id === id) ||
-      s.travelers.some(
-        (x) => x.id !== t.id && service(x.id, j.id).seats[f.instanceKey] === id,
-      )
-    ) {
-      toast("此座位已占用或不可選");
-      return;
-    }
-    service(t.id, j.id).seats[f.instanceKey] = id;
-    s.reviewed = false;
+    const error = selectSeat(el.dataset.seat);
+    if (error) toast(error);
     rerender();
+    return;
+  }
+  if (el.dataset.seatDirection) {
+    if (moveSeatFlight(+el.dataset.seatDirection)) rerender();
     return;
   }
   if (el.id === "auto-seats") {
@@ -626,7 +662,6 @@ document.addEventListener("click", async (e) => {
       if (result.success) {
         s.confirmation = result.confirmation;
         s.priceBreakdown = calculateOrder(s);
-        s.screen = "confirmation";
       } else s.paymentError = result.error;
       rerender({ top: true });
     } catch (err) {

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { state, reset, initialState } from "../js/state.js";
 import { pay } from "../js/payment.js";
 import { search } from "../js/flights.js";
+import { inventory } from "../js/inventory.js";
+import { ensureMeals } from "../js/meal-ui.js";
 import {
   validateFlights,
   validateTravelers,
@@ -51,7 +53,9 @@ function order() {
       family: "Saver",
     },
   ];
-  s.services = { t0: { j0: { seats: {}, meals: {}, bags: [23] } } };
+  s.services = {
+    t0: { j0: { seats: {}, meals: {}, specialMeals: {}, bags: [23] } },
+  };
   return s;
 }
 
@@ -146,9 +150,13 @@ test("journey changes invalidate consent and payment data while preserving other
   s.reviewed = true;
   s.paymentState = "failed";
   s.paymentError = "模擬授權失敗";
+  const flight = s.journeys[0].option.legs[0];
+  s.services.t0.j0.meals[flight.instanceKey] = ["NONE"];
+  s.services.t0.j0.specialMeals[flight.instanceKey] = "SP-VEG";
   s.services.t0.j1 = {
     seats: { old: "1A" },
-    meals: { old: ["S01"] },
+    meals: { old: ["NONE"] },
+    specialMeals: { old: "SP-VGAN" },
     bags: [32],
   };
   const kept = structuredClone(s.services.t0.j1);
@@ -157,8 +165,96 @@ test("journey changes invalidate consent and payment data while preserving other
   assert.equal(s.paymentState, "reviewed");
   assert.equal(s.paymentError, "");
   assert.deepEqual(s.services.t0.j1, kept);
-  assert.deepEqual(s.services.t0.j0, { seats: {}, meals: {}, bags: [] });
+  assert.deepEqual(s.services.t0.j0, {
+    seats: {},
+    meals: {},
+    specialMeals: {},
+    bags: [],
+  });
   assert.equal(s.travelers[0].surname, "TEST");
+});
+
+test("seat-only invalidation preserves main courses and special meal requests", () => {
+  const s = order();
+  ensureMeals(s);
+  const flight = s.journeys[0].option.legs[0];
+  const service = s.services.t0.j0;
+  service.seats[flight.instanceKey] = "5A";
+  service.specialMeals[flight.instanceKey] = "SP-MUS";
+  const meals = structuredClone(service.meals);
+  const special = structuredClone(service.specialMeals);
+  clearJourneyServices(s, "j0", { meals: false, bags: false });
+  assert.deepEqual(service.seats, {});
+  assert.deepEqual(service.meals, meals);
+  assert.deepEqual(service.specialMeals, special);
+  assert.deepEqual(service.bags, [23]);
+});
+
+test("seat validation permits unassigned travelers and rejects occupied, wrong-cabin or duplicate choices", () => {
+  const s = order();
+  s.passengerCount = 2;
+  s.travelers.push({ ...s.travelers[0], id: "t1" });
+  assert.equal(validateSeats(s), "");
+  const journey = s.journeys[0];
+  const flight = journey.option.legs[0];
+  const available = inventory(flight, journey.cabins[0]);
+  const free = available.seats.filter(
+    (seat) => !available.occupied.has(seat.id),
+  );
+  assert(free.length >= 2);
+  const seats = s.services.t0.j0.seats;
+  seats[flight.instanceKey] = free[0].id;
+  assert.equal(validateSeats(s), "");
+  s.services.t1 = { j0: { seats: { [flight.instanceKey]: free[0].id } } };
+  assert.match(validateSeats(s), /不重複/);
+  s.services.t1.j0.seats[flight.instanceKey] = free[1].id;
+  assert.equal(validateSeats(s), "");
+  s.services.t1.j0.seats[flight.instanceKey] = [...available.occupied][0];
+  assert.match(validateSeats(s), /有效/);
+  s.services.t1.j0.seats[flight.instanceKey] = "999Z";
+  assert.match(validateSeats(s), /有效/);
+  s.services.t1.j0.seats[flight.instanceKey] = inventory(
+    flight,
+    "C",
+  ).seats[0].id;
+  assert.match(validateSeats(s), /有效/);
+  delete seats[flight.instanceKey];
+  delete s.services.t1.j0.seats;
+  assert.equal(validateSeats(s), "");
+});
+
+test("booking meal validation enforces separate main courses and segment-wide special requests", () => {
+  const s = order();
+  const journey = s.journeys[0];
+  const flight = journey.option.legs[0];
+  assert.match(validateMeals(s), /餐點/);
+  ensureMeals(s);
+  assert.equal(validateMeals(s), "");
+  const service = s.services.t0.j0;
+  service.specialMeals[flight.instanceKey] = "SP-VGAN";
+  assert.equal(validateMeals(s), "");
+  service.meals[flight.instanceKey][0] = "S01";
+  assert.match(validateMeals(s), /餐點/);
+  service.meals[flight.instanceKey][0] = "NONE";
+  delete service.specialMeals[flight.instanceKey];
+  assert.equal(validateMeals(s), "");
+  service.specialMeals[flight.instanceKey] = "SP-UNKNOWN";
+  assert.match(validateMeals(s), /特殊餐/);
+
+  journey.cabins[0] = "C";
+  ensureMeals(s);
+  service.meals[flight.instanceKey][0] = "B01";
+  service.specialMeals[flight.instanceKey] = "SP-MUS";
+  assert.equal(validateMeals(s), "");
+  service.meals[flight.instanceKey][0] = "SP-MUS";
+  assert.match(validateMeals(s), /餐點/);
+  service.meals[flight.instanceKey][0] = "P04";
+  assert.equal(validateMeals(s), "");
+  s.passengerCount = 2;
+  s.travelers.push({ ...s.travelers[0], id: "t1" });
+  assert.match(validateMeals(s), /每位旅客/);
+  ensureMeals(s);
+  assert.equal(validateMeals(s), "");
 });
 
 test("payment freezes the submitted order and rejects repeat submissions", async (t) => {

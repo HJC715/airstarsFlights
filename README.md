@@ -17,7 +17,8 @@ python3 -m http.server 8000 --bind 0.0.0.0
 
 - 單程、來回、多城市 2–4 段；1–9 成人；可查起飛機場今日至第 364 天，至少提前兩小時。
 - 32 機場、38 雙向航線、118 單向固定週班表；直飛或 TPE/KHH 同機場一次轉機。按 PRD Part 1 §5 採 90 分鐘至 **18 小時**；Part 2 的 12 小時摘要以 Part 1 為準。
-- 八機型精確客艙、穩定 FNV-1a 模擬占位、逐段混艙、每方向票種、行李與每次餐飲選擇。
+- 八機型精確客艙、穩定 FNV-1a 模擬占位、逐段混艙與橫向票種比較。行李以 23／32 kg 加減器操作；座位只顯示所購艙等，可略過，亦支援多人依序選位、取消後補位及上下航段切換。
+- 經濟／豪經僅預約特殊餐，預設無需求；商務／頭等有主菜與三種早餐，特殊餐獨立設定。確認與成功頁共用圖示卡片，付款授權成功後按「完成」才進成功頁。
 - 所有金額由 `js/pricing.js` 統一以整數 TWD 計算，使用固定匯率顯示，換算尾差另列。選位與行李依已選服務計入，無真實退改票功能。
 - 返回修改僅清除受影響航段的服務；只換票種保留服務並重算權益，刪除多城市中間航程也保留其他航程的穩定識別碼與服務。付款保存不可變快照，離開成功頁清空整筆訂單。
 - 七步流程後進獨立成功頁；六碼 PNR、每人電子票號及 A4 多頁 PDF。PDF 使用瀏覽器 Canvas 與專案內繁中字型繪製再嵌入 PDF，中文字可讀但不能選取為文字，每頁均有模擬無效聲明。
@@ -27,9 +28,9 @@ python3 -m http.server 8000 --bind 0.0.0.0
 ## 基本驗收
 
 1. 搜尋未來可售的 TPE → NRT 單程、一成人，選航班、艙等與票種。
-2. 使用虛構旅客資料，確認行李，手動選位或確認費用後自動分配，選餐。
+2. 使用具自然姓名的虛構旅客資料，確認行李；可略過選位、手動選位或確認費用後自動分配，再設定餐飲需求。
 3. 核對機票、模擬稅費、選位及行李總額；勾選確認，使用測試卡完成模擬付款。
-4. 核對 PNR、電子票號、下載真正 PDF 並檢查中文與每頁聲明。
+4. 授權成功後按「完成」，核對 PNR、電子票號、下載 PDF 並檢查中文、未選位提示與每頁聲明。
 5. 在手機重複操作。用失敗 QA 參數檢查付款後保留資料與可重試。
 
 純邏輯驗證（需 Node 22 以上，無專案套件依賴）：
@@ -44,6 +45,8 @@ node --test tests/*.test.mjs
 npm --cache /workspace/.npm-cache --prefix /workspace/air-stars-tools install --no-audit --no-fund playwright@1.58.2
 node tests/browser.mjs
 node tests/ui.mjs
+node tests/fare-layout.mjs
+node tests/review-layout.mjs
 node tests/pdf.mjs
 ```
 
@@ -55,6 +58,8 @@ node tests/pdf.mjs
 
 ## 檔案與授權
 
-`assets/data/` 保存完整規範資料；`js/` 為時區、航班、庫存、價格、流程、介面、付款與 PDF 模組；`css/` 包含 RWD 與 reduced-motion；`assets/images/` 與 `assets/icons/` 為本專案原創 SVG。
+`assets/data/` 保存完整規範資料；`js/` 為時區、航班、庫存、價格、流程、介面、付款與 PDF 模組；`css/` 包含 RWD 與 reduced-motion；`assets/icons/` 為本專案原創 SVG；`assets/images/aircraft-hero.png` 是依本專案需求生成的無文字航空形象圖。
 
 `assets/vendor/jspdf.umd.min.js` 為 jsPDF 3.0.4（MIT，完整授權見同目錄）；`AirStarsCJK.woff2` 由 Noto Sans CJK TC Regular（SIL Open Font License 1.1）轉為 WOFF2，散布授權及原作者資訊見 `Noto-LICENSE.txt`。字型已隨專案提供，無需另外安裝。
+
+2026-10-19 的 16 項介面與流程調整詳見 `docs/UPDATES_2026-10-19.md`；這些新要求優先於原始 PRD 中相對應的舊規則。

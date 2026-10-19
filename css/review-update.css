@@ -1,0 +1,790 @@
+.review-board {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.review-board * {
+  min-width: 0;
+}
+.review-icon {
+  display: inline-block;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
+  vertical-align: middle;
+}
+.review-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #526176;
+  font-size: 13px;
+}
+.review-intro > .review-icon {
+  color: #94713a;
+}
+.review-intro p {
+  margin: 0;
+}
+.review-card {
+  padding: 24px;
+  border: 1px solid #dfe3e6;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 18px #13284704;
+}
+.review-card-heading,
+.review-heading-label,
+.review-services-heading,
+.review-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.review-card-heading {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.review-heading-label {
+  align-items: flex-start;
+}
+.review-heading-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  border-radius: 11px;
+  background: #f6f1e7;
+  color: #94713a;
+}
+.review-card h2 {
+  margin: 2px 0 0;
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 650;
+}
+.review-eyebrow {
+  display: block;
+  color: #727c87;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.review-edit {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  min-height: 44px;
+  flex-shrink: 0;
+  border: 0;
+  color: #856431;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+}
+.review-edit .review-icon {
+  width: 17px;
+  height: 17px;
+  flex-basis: 17px;
+}
+.review-journey-overview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px 16px;
+  margin: 20px 0 16px;
+  font-size: 13px;
+  color: #697789;
+}
+.review-fare-badge,
+.review-cabin-badge,
+.review-currency-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: #eef2f7;
+  color: #344c69;
+  font-size: 12px;
+  font-weight: 600;
+}
+.review-fare-badge {
+  background: #f6f1e7;
+  color: #856431;
+}
+.review-flight {
+  padding: 18px 20px 20px;
+  border: 1px solid #e5e9ed;
+  border-radius: 10px;
+  background: #fcfdfe;
+}
+.review-flight-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 18px;
+  color: #697789;
+  font-size: 12px;
+}
+.review-flight-meta > strong {
+  color: #132847;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.review-flight-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+.review-flight-duration .review-icon {
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
+}
+.review-route-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+  gap: 16px;
+}
+.review-point:last-child {
+  text-align: right;
+}
+.review-point-label {
+  color: #697789;
+  font-size: 11px;
+}
+.review-time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+  color: #132847;
+  font-size: 32px;
+  line-height: 1.3;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.review-point:last-child .review-time {
+  justify-content: flex-end;
+}
+.review-day-offset {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #f6ecdc;
+  color: #856431;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.review-airport-name {
+  display: grid;
+  gap: 1px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.review-airport-name strong {
+  font-size: 17px;
+  letter-spacing: 0.06em;
+}
+.review-point time {
+  display: block;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.review-time-zone {
+  display: block;
+  margin-top: 2px;
+  color: #76818c;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.review-route-rail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  margin-top: 14px;
+  color: #9a7b49;
+  gap: 5px;
+}
+.review-route-rail::before,
+.review-route-rail::after {
+  content: "";
+  height: 1px;
+  width: 100%;
+  background: #d8c8ab;
+}
+.review-route-rail .review-icon {
+  transform: rotate(90deg);
+  width: 23px;
+  height: 23px;
+  flex-basis: 23px;
+}
+.review-transfer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px;
+  padding: 14px 16px;
+  border-left: 1px dashed #d1bb93;
+  color: #84632e;
+  font-size: 12px;
+}
+.review-transfer strong,
+.review-transfer span {
+  display: block;
+}
+.review-transfer strong {
+  font-weight: 600;
+}
+.review-transfer span {
+  color: #697789;
+  margin-top: 1px;
+}
+.review-services-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  margin: 20px 0 12px;
+}
+.review-services-heading h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.review-edit-actions {
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.review-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 14px;
+}
+.review-passenger-card {
+  overflow: hidden;
+  border: 1px solid #e4e8ec;
+  border-radius: 10px;
+}
+.review-passenger-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #f7f9fb;
+}
+.review-passenger-heading > .review-icon {
+  color: #78889a;
+}
+.review-passenger-heading h4 {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.review-flight-service {
+  padding: 14px 16px;
+  border-top: 1px solid #e9ecef;
+}
+.review-service-flight {
+  display: block;
+  margin-bottom: 12px;
+  color: #526176;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.review-service-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.review-service-line > .review-icon {
+  width: 18px;
+  height: 18px;
+  flex-basis: 18px;
+  margin-top: 2px;
+  color: #9b7b48;
+}
+.review-service-line > div {
+  flex: 1;
+}
+.review-service-caption {
+  display: block;
+  margin-bottom: 4px;
+  color: #74808e;
+  font-size: 11px;
+}
+.review-seat-number {
+  font-size: 17px;
+  letter-spacing: 0.03em;
+}
+.review-seat-pending {
+  font-size: 13px;
+  font-weight: 500;
+}
+.review-service-line small {
+  display: block;
+  margin-top: 3px;
+  color: #6e7d70;
+  font-size: 11px;
+}
+.review-meal-items {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+.review-baggage {
+  padding: 13px 16px 15px;
+  border-top: 1px solid #eee8da;
+  background: #fbf9f3;
+}
+.review-service-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 9px;
+  font-size: 12px;
+  color: #84632e;
+}
+.review-service-label .review-icon {
+  width: 17px;
+  height: 17px;
+  flex-basis: 17px;
+}
+.review-bag-facts {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+}
+.review-bag-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.review-bag-facts dt {
+  color: #77808a;
+}
+.review-bag-facts dd {
+  margin: 0;
+  text-align: right;
+}
+.review-bag-chip + .review-bag-chip::before {
+  content: "、";
+}
+.review-terms {
+  margin-top: 18px;
+  border-top: 1px solid #e7e9ec;
+  font-size: 12px;
+}
+.review-terms summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding-top: 6px;
+  cursor: pointer;
+  list-style: none;
+  color: #526176;
+  font-weight: 600;
+}
+.review-terms summary::-webkit-details-marker {
+  display: none;
+}
+.review-terms summary > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-terms summary:focus-visible {
+  outline: 3px solid #ad8642;
+  outline-offset: 3px;
+}
+.review-terms-chevron {
+  width: 17px;
+  height: 17px;
+}
+.review-terms[open] .review-terms-chevron {
+  transform: rotate(180deg);
+}
+.review-term-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px 22px;
+  margin: 5px 0 14px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f7f9fb;
+}
+.review-term-grid dt {
+  margin-bottom: 4px;
+  color: #75818f;
+  font-size: 11px;
+}
+.review-term-grid dd {
+  margin: 0;
+}
+.review-term-grid dd > span,
+.review-term-grid dd > small {
+  display: block;
+}
+.review-term-grid small {
+  color: #75818f;
+  font-size: 11px;
+}
+.review-fine-print {
+  margin: 14px 0 0;
+  color: #7a8590;
+  font-size: 11px;
+}
+.review-details-grid {
+  display: grid;
+  gap: 22px;
+}
+.review-traveler-list {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.review-traveler-list > li {
+  display: flex;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid #e9ecef;
+}
+.review-traveler-list > li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.review-traveler-list > li:last-child {
+  padding-bottom: 0;
+}
+.review-person-number {
+  flex: 0 0 28px;
+  color: #b59c73;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+.review-person-details {
+  flex: 1;
+}
+.review-person-details h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.review-person-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin: 0;
+  font-size: 12px;
+}
+.review-person-meta dt {
+  color: #7a8590;
+  font-size: 11px;
+}
+.review-person-meta dd {
+  margin: 2px 0 0;
+}
+.review-electronic-ticket {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-top: 12px;
+  padding: 8px 11px;
+  border: 1px dashed #d8cbb5;
+  border-radius: 5px;
+  background: #fdfbf6;
+  font-size: 12px;
+}
+.review-electronic-ticket > span {
+  color: #8b7757;
+}
+.review-electronic-ticket > strong {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.review-contact-list {
+  display: grid;
+  gap: 15px;
+  margin: 22px 0 0;
+}
+.review-contact-list dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #77828f;
+  font-size: 11px;
+}
+.review-contact-list .review-icon {
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
+}
+.review-contact-list dd {
+  margin: 4px 0 0 24px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.review-cost-lines {
+  margin: 18px 0;
+}
+.review-cost-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: start;
+  gap: 10px 18px;
+  padding: 14px 0 5px;
+  font-size: 13px;
+}
+.review-cost-row dt > strong,
+.review-cost-row dt > span {
+  display: block;
+}
+.review-cost-row dt > span {
+  color: #75818e;
+  font-size: 11px;
+}
+.review-cost-row dd {
+  margin: 0;
+  white-space: nowrap;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.review-cost-tax {
+  padding: 2px 0 15px;
+  border-bottom: 1px solid #e9ecef;
+  color: #7b8590;
+  font-size: 12px;
+}
+.review-cost-tax dd,
+.review-cost-adjustment dd {
+  font-weight: 400;
+}
+.review-cost-row.review-cost-extra {
+  padding-top: 18px;
+}
+.review-cost-row.review-cost-extra ~ .review-cost-row {
+  padding-top: 10px;
+}
+.review-cost-extra dt > span,
+.review-cost-extra + .review-cost-row dt > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #526176;
+}
+.review-cost-row .review-icon {
+  width: 17px;
+  height: 17px;
+  flex-basis: 17px;
+}
+.review-cost-adjustment {
+  color: #75818e;
+  font-size: 11px;
+}
+.review-total {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 20px -24px -24px;
+  padding: 22px 24px;
+  border-radius: 0 0 13px 13px;
+  background: #132847;
+  color: #fff;
+}
+.review-total > div > span {
+  font-size: 13px;
+}
+.review-total small {
+  display: block;
+  margin-top: 3px;
+  color: #bcc9d9;
+  font-size: 11px;
+}
+.review-total > strong {
+  font-size: clamp(23px, 3vw, 30px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.review-twd-total {
+  grid-column: 1 / -1;
+  padding-top: 12px;
+  border-top: 1px solid #ffffff25;
+  color: #bcc9d9;
+  font-size: 11px;
+}
+.review-agreement {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid #d9c6a3;
+  border-radius: 10px;
+  background: #fdfaf3;
+  cursor: pointer;
+  font-size: 13px;
+}
+.review-agreement input {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 3px 0 0;
+  accent-color: #92713b;
+}
+.review-agreement > span > strong,
+.review-agreement > span > span {
+  display: block;
+}
+.review-agreement > span > span {
+  margin-top: 3px;
+  color: #78818b;
+  font-size: 12px;
+}
+@media (min-width: 1280px) {
+  .review-board-completed .review-details-grid {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: start;
+  }
+}
+@media (max-width: 600px) {
+  .review-board {
+    gap: 16px;
+  }
+  .review-card {
+    padding: 17px 15px;
+    border-radius: 10px;
+  }
+  .review-card-heading {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .review-heading-label {
+    gap: 10px;
+  }
+  .review-heading-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 9px;
+  }
+  .review-card h2 {
+    font-size: 17px;
+  }
+  .review-card-heading > .review-edit {
+    margin: -4px 0 -6px auto;
+  }
+  .review-journey-overview {
+    gap: 8px 11px;
+    margin-top: 14px;
+    font-size: 12px;
+  }
+  .review-flight {
+    padding: 13px 12px 15px;
+  }
+  .review-flight-meta {
+    gap: 6px 9px;
+    margin-bottom: 14px;
+    font-size: 11px;
+  }
+  .review-flight-duration {
+    width: 100%;
+    margin-left: 0;
+  }
+  .review-route-grid {
+    grid-template-columns: minmax(0, 1fr) 25px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .review-time {
+    font-size: 26px;
+    gap: 4px;
+  }
+  .review-day-offset {
+    font-size: 10px;
+    padding: 2px 3px;
+  }
+  .review-airport-name {
+    font-size: 12px;
+  }
+  .review-airport-name strong {
+    font-size: 15px;
+  }
+  .review-point time {
+    font-size: 11px;
+  }
+  .review-route-rail {
+    margin-top: 12px;
+  }
+  .review-route-rail::before,
+  .review-route-rail::after {
+    display: none;
+  }
+  .review-transfer {
+    margin: 0 12px;
+    padding: 12px;
+    font-size: 11px;
+  }
+  .review-edit-actions {
+    width: 100%;
+    margin-left: -5px;
+    gap: 0;
+  }
+  .review-edit-actions .review-edit {
+    font-size: 11px;
+    padding: 6px 7px;
+  }
+  .review-term-grid {
+    grid-template-columns: 1fr;
+    padding: 13px;
+  }
+  .review-person-number {
+    flex-basis: 20px;
+  }
+  .review-traveler-list > li {
+    gap: 9px;
+  }
+  .review-cost-row {
+    gap: 8px 12px;
+    font-size: 12px;
+  }
+  .review-cost-row dt > span {
+    font-size: 10px;
+  }
+  .review-cost-tax {
+    font-size: 11px;
+  }
+  .review-total {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 18px -15px -17px;
+    padding: 19px 15px;
+    border-radius: 0 0 9px 9px;
+  }
+  .review-total > strong {
+    font-size: 28px;
+  }
+  .review-agreement {
+    padding: 16px;
+    font-size: 12px;
+  }
+}

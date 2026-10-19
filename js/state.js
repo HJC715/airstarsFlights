@@ -48,6 +48,12 @@ export function freezeBookingSnapshot(s, priceBreakdown) {
 }
 export function service(tid, jid) {
   state.services[tid] ??= {};
-  state.services[tid][jid] ??= { seats: {}, meals: {}, bags: [] };
+  state.services[tid][jid] ??= {
+    seats: {},
+    meals: {},
+    specialMeals: {},
+    bags: [],
+  };
+  state.services[tid][jid].specialMeals ??= {};
   return state.services[tid][jid];
 }

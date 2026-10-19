@@ -46,6 +46,57 @@ async function selectFlights(page, count) {
     await page.locator(`[data-select-flight^="${i}|"]`).first().click();
 }
 
+async function assertNoPanelAnimation(page) {
+  assert.equal(await page.locator("#main.view-enter").count(), 0);
+  assert(
+    await page
+      .locator(".panel")
+      .evaluateAll((panels) =>
+        panels.every(
+          (panel) => getComputedStyle(panel).animationName === "none",
+        ),
+      ),
+    "changing a selection must not replay panel entrance animations",
+  );
+}
+
+async function cardContrast(page) {
+  return page.locator('[data-card="DEMO-VIRTUAL"]').evaluate((card) => {
+    const components = (color) =>
+      color
+        .match(/[\d.]+/g)
+        .slice(0, 3)
+        .map(Number);
+    const luminance = (rgb) =>
+      rgb.reduce((total, value, i) => {
+        const channel = value / 255;
+        return (
+          total +
+          (channel <= 0.04045
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4) *
+            [0.2126, 0.7152, 0.0722][i]
+        );
+      }, 0);
+    const style = getComputedStyle(card);
+    const backgrounds = style.backgroundImage.match(/rgba?\([^)]+\)/g) || [
+      style.backgroundColor,
+    ];
+    const texts = [...card.querySelectorAll("strong, span, small")];
+    return Math.min(
+      ...texts.flatMap((text) =>
+        backgrounds.map((background) => {
+          const first = luminance(components(getComputedStyle(text).color));
+          const second = luminance(components(background));
+          return (
+            (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05)
+          );
+        }),
+      ),
+    );
+  });
+}
+
 async function mobileKeyboardAndRoundTrip() {
   const page = await open(320);
   try {
@@ -60,6 +111,7 @@ async function mobileKeyboardAndRoundTrip() {
       "changing an airport must retain keyboard focus",
     );
     await origin.selectOption("TPE");
+    await page.locator("#passenger-count").selectOption("3");
     await page.locator('[data-home="0.date"]').fill(dates[0]);
     await page.locator('[data-home="1.date"]').fill(dates[3]);
     await page.locator('button[type="submit"]').click();
@@ -73,12 +125,43 @@ async function mobileKeyboardAndRoundTrip() {
       flightKey,
       "selecting a flight must retain keyboard focus",
     );
+    await assertNoPanelAnimation(page);
     await page.locator('[data-select-flight^="1|"]').first().click();
+    assert.equal(
+      await page
+        .locator(".summary-line > span")
+        .filter({ hasText: /^附加服務$/ })
+        .count(),
+      0,
+    );
     await page.locator("#next").click();
     await page.locator("#demo-data").click();
     await page.locator("#next").click();
     await page.locator("#next").click();
     await assertWidth(page, 320);
+
+    const expectedSeats = await page.evaluate(async () => {
+      const { state } = await import("./js/state.js");
+      const { aircraft } = await import("./js/data.js");
+      const journey = state.journeys[0];
+      return aircraft[journey.option.legs[0].aircraftType].capacityByCabin[
+        journey.cabins[0]
+      ];
+    });
+    assert.equal(await page.locator("[data-seat]").count(), expectedSeats);
+    assert.equal(await page.locator(".seat-cabin-title").count(), 1);
+    for (const direction of [-1, 1]) {
+      const button = page.locator(`[data-seat-direction="${direction}"]`);
+      assert(
+        await button.isVisible(),
+        "both mobile segment buttons must remain visible",
+      );
+      assert.equal(
+        await button.evaluate((el) => getComputedStyle(el).color),
+        "rgb(19, 40, 71)",
+      );
+    }
+    assert(await page.locator('[data-seat-direction="-1"]').isDisabled());
 
     const shell = page.locator(".seat-shell");
     assert(
@@ -116,19 +199,111 @@ async function mobileKeyboardAndRoundTrip() {
       await page.locator(".summary details").getAttribute("open"),
       "",
     );
+    await page.keyboard.press("Enter");
+    assert.equal(
+      await page.locator(".seat.selected").count(),
+      0,
+      "pressing an assigned seat cancels it",
+    );
     await page.locator(".summary summary").click();
-    await page.locator("#auto-seats").click();
+    const chosen = await page
+      .locator("[data-seat]:not(:disabled)")
+      .evaluateAll((buttons) =>
+        buttons.slice(0, 3).map((button) => button.dataset.seat),
+      );
+    const assignments = async () => {
+      const order = await snapshot(page);
+      const journey = order.journeys[0];
+      const key = journey.option.legs[0].instanceKey;
+      return order.travelers.map(
+        (traveler) => order.services[traveler.id]?.[journey.id]?.seats[key],
+      );
+    };
+    for (const seat of chosen)
+      await page.locator(`[data-seat="${seat}"]`).click();
+    assert.deepEqual(
+      await assignments(),
+      chosen,
+      "three clicks assign travelers A, B, and C in order",
+    );
+    assert.match(
+      await page.locator(".seat-current-traveler").textContent(),
+      /已完成/,
+    );
+    await page.locator(`[data-seat="${chosen[1]}"]`).click();
+    await page.locator(`[data-seat="${chosen[0]}"]`).click();
+    assert.match(
+      await page.locator(".seat-current-traveler").textContent(),
+      /成人 1/,
+    );
+    await page.locator(`[data-seat="${chosen[0]}"]`).click();
+    assert.match(
+      await page.locator(".seat-current-traveler").textContent(),
+      /成人 2/,
+    );
+    await page.locator(`[data-seat="${chosen[1]}"]`).click();
+    assert.deepEqual(
+      await assignments(),
+      chosen,
+      "new selections refill the earliest canceled travelers",
+    );
+    await assertNoPanelAnimation(page);
+    await page.locator('[data-seat-direction="1"]').click();
+    assert(await page.locator('[data-seat-direction="1"]').isDisabled());
+    assert(await page.locator('[data-seat-direction="-1"]').isEnabled());
+    assert.match(
+      await page.locator(".seat-current-traveler").textContent(),
+      /成人 1/,
+    );
+    assert.match(
+      await page.locator(".seat-traveler-list").textContent(),
+      /於報到時由系統隨機安排/,
+    );
     await page.locator("[data-mobile-next]").click();
+    assert.equal(
+      (await snapshot(page)).activeStep,
+      5,
+      "an entirely unselected segment must allow continuing",
+    );
+    assert.equal(await page.locator("[data-meal]").count(), 0);
+    assert.equal(
+      await page.locator("[data-special-meal]").first().inputValue(),
+      "NONE",
+    );
     await page.locator("[data-mobile-next]").click();
+    assert.match(
+      await page.locator("#step-content").textContent(),
+      /於報到時由系統隨機安排/,
+    );
     await page.locator("#review-check").check();
     await page.locator("[data-mobile-next]").click();
+    assert(
+      (await cardContrast(page)) >= 4.5,
+      "JCB text must contrast with every gradient endpoint",
+    );
+    await page.locator('[data-card="DEMO-VIRTUAL"]').click();
+    await page.locator('[data-card="DEMO-VIRTUAL"]').hover();
+    assert(
+      (await cardContrast(page)) >= 4.5,
+      "selected and hovered JCB text must remain readable",
+    );
+    assert.doesNotMatch(
+      await page.locator("#step-content").textContent(),
+      /成功率|98%|3[–-]5\s*秒|實際扣款/,
+    );
     await page.locator("[data-mobile-next]").click();
-    await page.locator(".pnr").waitFor({ timeout: 10000 });
+    await page.locator("#finish-payment").waitFor({ timeout: 10000 });
+    assert.equal(await page.locator(".pnr").count(), 0);
+    const authorized = await snapshot(page);
+    assert.equal(authorized.activeStep, 7);
+    assert.equal(authorized.paymentState, "completed");
+    await page.locator("[data-mobile-next]").click();
+    await page.locator(".pnr").waitFor();
     assert.match(await page.locator(".pnr").textContent(), /^[A-Z0-9]{6}$/);
     assert.equal((await snapshot(page)).journeys.length, 2);
     await assertWidth(page, 320);
     console.log(
-      "PASS 320px round trip, keyboard focus, seat scrolling, mobile payment",
+      "PASS 320px three-person round trip: focus/scroll, sequential seats/cancellation, optional seats, JCB contrast, authorization then completion",
     );
   } finally {
     await page.close();
@@ -179,11 +354,14 @@ async function removeMiddleJourney() {
     await page.locator("#next").click();
     await page.locator("#demo-data").click();
     await page.locator("#next").click();
-    await page.locator('[data-add-bag="2|0"]').click();
+    await page.locator('[data-bag-change="2|0|23|1"]').click();
     await page.locator("#next").click();
     await page.locator("#auto-seats").click();
     await page.locator("#next").click();
-    await page.locator('[data-meal^="2|"]').first().selectOption("SP-VGAN");
+    await page
+      .locator('[data-special-meal^="2|"]')
+      .first()
+      .selectOption("SP-VGAN");
     const before = await snapshot(page);
     await page.locator('.steps [data-step="1"]').click();
     await page.locator("#back").click();

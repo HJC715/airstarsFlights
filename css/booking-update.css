@@ -1,0 +1,138 @@
+.baggage-traveler {
+  padding: 22px 0 10px;
+  border-top: 1px solid var(--line);
+}
+.baggage-traveler h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+}
+.baggage-options {
+  display: grid;
+  gap: 12px;
+}
+.baggage-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.baggage-option strong {
+  font-size: 14px;
+}
+.baggage-option strong span {
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 6px;
+}
+.baggage-option small {
+  display: block;
+  margin-top: 4px;
+}
+.quantity-control {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.quantity-control button {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  width: 44px;
+  min-height: 44px;
+  font-size: 20px;
+}
+.quantity-control output {
+  min-width: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.baggage-traveler > .small {
+  margin: 10px 0 4px;
+  text-align: right;
+}
+.pay-card[data-card="DEMO-VIRTUAL"] {
+  background: linear-gradient(130deg, #e7edf3, #bdccdc);
+  color: var(--navy);
+}
+.pay-card[data-card="DEMO-VIRTUAL"]:hover:not(:disabled) {
+  background: linear-gradient(130deg, #e7edf3, #bdccdc);
+  color: var(--navy);
+}
+.authorization-success {
+  text-align: center;
+  padding: 42px 28px;
+}
+.authorization-icon {
+  width: 84px;
+  height: 84px;
+  color: var(--green);
+  margin: 0 auto 20px;
+}
+.authorization-success h2 {
+  font-size: 30px;
+  margin: 12px 0;
+}
+.authorization-success > p {
+  color: var(--muted);
+}
+.authorization-amount {
+  display: grid;
+  gap: 6px;
+  padding: 22px;
+  margin: 25px 0;
+  background: #f2f6f3;
+  border-radius: 8px;
+}
+.authorization-amount > span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.authorization-amount strong {
+  font-size: 27px;
+}
+.authorization-success > button {
+  min-width: 160px;
+  margin-top: 10px;
+}
+.summary-total strong,
+.flight-price > span {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 767px) {
+  .hero {
+    min-height: 500px;
+    background-size: auto 320px;
+    background-position: right bottom;
+    background-repeat: no-repeat;
+    background-color: var(--navy);
+  }
+  .hero:after {
+    background: linear-gradient(
+      180deg,
+      #132847 0%,
+      #132847e6 26%,
+      #13284730 58%,
+      transparent 85%
+    );
+  }
+  .baggage-option {
+    padding: 12px 10px;
+    gap: 8px;
+  }
+  .baggage-option strong span {
+    display: block;
+    margin-left: 0;
+  }
+  .authorization-success {
+    padding: 30px 16px;
+  }
+  .authorization-success h2 {
+    font-size: 26px;
+  }
+}

@@ -1,0 +1,125 @@
+.seat-update h2 {
+  margin: 0;
+}
+
+.seat-update .seat-flight-picker {
+  display: block;
+  margin-top: 20px;
+}
+
+.seat-update .seat-flight-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-top: 18px;
+}
+
+.seat-update .seat-current-traveler {
+  color: var(--navy);
+  font-weight: 700;
+  margin: 24px 0 12px;
+}
+
+.seat-update .seat-traveler-list {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.seat-update .seat-traveler-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.seat-update .seat-traveler-list .is-next {
+  border-color: var(--gold);
+  background: #faf5e9;
+}
+
+.seat-update .seat-traveler-list .is-assigned {
+  background: #f0f4f7;
+}
+
+.seat-update .seat-traveler-list strong {
+  font-size: 12px;
+}
+
+.seat-update .seat-scroll-hint {
+  margin: 14px 0 0;
+}
+
+.seat-update .seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.seat-update .seat small {
+  font-size: 9px;
+  line-height: 1.2;
+  margin-top: 2px;
+  color: inherit;
+}
+
+.seat-update .seat.selected:hover {
+  background: #243f64;
+  color: #fff;
+}
+
+.seat-update .seat-shell:focus-visible {
+  outline: 3px solid #ad8642;
+  outline-offset: 3px;
+}
+
+.seat-update .seat-flight-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 20px;
+  margin-left: 0;
+}
+
+.seat-update .seat-flight-navigation button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.seat-update .seat-flight-navigation button:hover:not(:disabled) {
+  background: #f6f1e7;
+  border-color: var(--gold);
+}
+
+.seat-update .seat-flight-navigation span {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .seat-update .seat-flight-info {
+    flex-direction: column;
+  }
+
+  .seat-update .seat-flight-navigation button {
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 12px;
+  }
+}

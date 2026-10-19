@@ -1,5 +1,48 @@
 import { inventory } from "./inventory.js";
 import { seatPrice } from "./pricing.js";
+
+export function nextUnseatedTraveler(s, journey, flight) {
+  return s.travelers.findIndex(
+    (traveler) =>
+      !s.services[traveler.id]?.[journey.id]?.seats?.[flight.instanceKey],
+  );
+}
+
+export function toggleSeat(s, journey, legIndex, id) {
+  if (s.paymentState === "processing")
+    return "模擬付款處理中，暫時無法修改座位";
+  if (typeof id !== "string" || !id) return "請選擇有效座位";
+  const flight = journey?.option?.legs?.[legIndex];
+  const cabin = journey?.cabins?.[legIndex];
+  if (!flight || !cabin) return "請先為此航段選擇航班與艙等";
+
+  const owners = s.travelers.filter(
+    (traveler) =>
+      s.services[traveler.id]?.[journey.id]?.seats?.[flight.instanceKey] === id,
+  );
+  if (owners.length) {
+    for (const traveler of owners)
+      delete s.services[traveler.id][journey.id].seats[flight.instanceKey];
+    s.reviewed = false;
+    return "";
+  }
+
+  const available = inventory(flight, cabin);
+  if (!available.seats.some((seat) => seat.id === id))
+    return "此座位不屬於本航段已購艙等";
+  if (available.occupied.has(id)) return "此座位已被占用，請選擇其他座位";
+  const travelerIndex = nextUnseatedTraveler(s, journey, flight);
+  if (travelerIndex === -1)
+    return "此航段已完成選位；如需更換，請先點選已選座位取消";
+
+  const traveler = s.travelers[travelerIndex];
+  s.services[traveler.id] ??= {};
+  s.services[traveler.id][journey.id] ??= { seats: {}, meals: {}, bags: [] };
+  s.services[traveler.id][journey.id].seats[flight.instanceKey] = id;
+  s.reviewed = false;
+  return "";
+}
+
 export function autoSeats(s) {
   const assignments = [];
   let cost = 0;

@@ -9,7 +9,7 @@ import {
 import { airportByCode } from "./data.js";
 import { localDateTime, localDate, dayDiff } from "./timezone.js";
 import { families, cabinNames } from "../assets/data/fares.js";
-import { mealName } from "./meals.js";
+import { mealDescription } from "./meals.js";
 let loading, assetsLoading;
 async function pdfLibrary() {
   if (window.jspdf?.jsPDF) return window.jspdf.jsPDF;
@@ -108,16 +108,12 @@ export function itineraryLines(s) {
         `抵達：${dest.nameZh} ${flight.destination}　${localDateTime(flight.arrivalUTC, dest.timeZone)}（${dest.timeZone}）${diff ? " " + (diff > 0 ? "+" : "") + diff + " 日" : ""}`,
       );
       for (const t of s.travelers) {
-        const sv = s.services[t.id][j.id];
+        const sv = s.services[t.id]?.[j.id] || {};
+        const seat = sv.seats?.[flight.instanceKey];
         line(
-          `${t.surname} / ${t.givenName}　座位 ${sv.seats[flight.instanceKey]}`,
+          `${t.surname} / ${t.givenName}　${seat ? "座位 " + seat : "於報到時由系統隨機安排（不收取預選座位費）"}`,
         );
-        line(
-          "餐飲：" +
-            (sv.meals[flight.instanceKey] || [])
-              .map((m, i) => `第 ${i + 1} 餐 ${mealName(m)}`)
-              .join("；"),
-        );
+        line("餐飲：" + mealDescription(flight, j.cabins[li], sv));
       }
       if (li === 0 && j.option.layoverMinutes)
         line(
@@ -125,7 +121,7 @@ export function itineraryLines(s) {
         );
     });
     for (const t of s.travelers) {
-      const bags = s.services[t.id][j.id].bags;
+      const bags = s.services[t.id]?.[j.id]?.bags || [];
       line(
         `${t.surname} / ${t.givenName}：免費託運 ${a.pieces} 件 × ${a.kg} kg；手提 ${a.hand} 件 × 7 kg；額外加購 ${bags.length ? bags.map((k) => k + " kg").join("、") : "無"}。`,
       );
@@ -154,14 +150,14 @@ export function itineraryLines(s) {
   b.segmentFaresTWD.forEach((p, i) => {
     const j = s.journeys.find((j) => j.id === p.journeyId);
     line(
-      `航程 ${s.journeys.indexOf(j) + 1} · ${j.date || j.requestedDate} · ${p.flight} ${cabinNames[p.cabin]} 機票 ${money(p.unit)} × ${p.count} = ${money(p.amount)}`,
+      `航程 ${s.journeys.indexOf(j) + 1} · ${j.date || j.requestedDate || j.option.legs[0].departureLocalISODate} · ${p.flight} ${cabinNames[p.cabin]} 機票 ${money(p.unit)} × ${p.count} = ${money(p.amount)}`,
     );
     const tax = b.segmentTaxesTWD[i];
     line(
       `${p.flight} 模擬稅費 ${money(tax.unit)} × ${tax.count} = ${money(tax.amount)}`,
     );
   });
-  for (const p of b.seatFeesTWD)
+  for (const p of b.seatFeesTWD.filter((item) => item.seat))
     line(
       `${s.travelers.find((t) => t.id === p.travelerId).surname} / ${s.travelers.find((t) => t.id === p.travelerId).givenName} ${p.flight} 座位 ${p.seat}：${money(p.amount)}`,
     );

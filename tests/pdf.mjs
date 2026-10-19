@@ -73,9 +73,19 @@ try {
           seats: {},
           bags: [23, 32],
           meals: Object.fromEntries(
+            j.option.legs.map((f, li) => [
+              f.instanceKey,
+              Array.from({ length: serviceCount(f) }, (_, mealIndex) =>
+                ["C", "F"].includes(j.cabins[li])
+                  ? ["P02", "B01", "B03"][mealIndex]
+                  : "NONE",
+              ),
+            ]),
+          ),
+          specialMeals: Object.fromEntries(
             j.option.legs.map((f) => [
               f.instanceKey,
-              Array(serviceCount(f)).fill("SP-VGAN"),
+              t.id === "t0" ? "SP-VGAN" : "NONE",
             ]),
           ),
         };
@@ -84,6 +94,8 @@ try {
     if (assigned.error) throw new Error(assigned.error);
     for (const a of assigned.assignments)
       s.services[a.tid][a.jid].seats[a.key] = a.id;
+    delete s.services.t0.j0.seats[s.journeys[0].option.legs[0].instanceKey];
+    delete s.services.t8.j0.specialMeals;
     const b = calculateOrder(s);
     s.confirmation = {
       pnr: "PDF9X4",
@@ -131,6 +143,12 @@ try {
   assert(text.includes("ST-ETK-TEST0008"));
   assert(text.includes("2026-10-19 07:58（Asia/Taipei）"));
   assert(!text.includes("CHANGED"));
+  assert(!text.includes("undefined"));
+  assert(text.includes("於報到時由系統隨機安排（不收取預選座位費）"));
+  assert(text.includes("特殊餐需求：無需求"));
+  assert(text.includes("特殊餐需求：全素"));
+  assert(text.includes("炭烤牛排"));
+  assert(text.includes("起司歐姆蛋佐烤番茄"));
   assert(text.includes("TEST / TRAVELERA"));
   assert(text.includes("最終總額：" + summary.expectedTotal));
   assert(text.includes("TWD 基準總額：" + summary.expectedTWD));
@@ -140,7 +158,9 @@ try {
   );
   assert.equal(
     summary.lines.filter(
-      (line) => line.includes("座位 ") && !line.includes("：TWD"),
+      (line) =>
+        line.startsWith("TEST /") &&
+        (line.includes("　座位 ") || line.includes("　於報到時")),
     ).length,
     72,
   );
